@@ -311,7 +311,8 @@ export const downloadHistory = async (req, res) => {
           h.record_id, 
           h.downloaded_at, 
           f.file_title AS file_name, 
-          u.user_name AS contributor_name
+          u.user_name AS contributor_name,
+          u.user_id AS contributor_id
         FROM history h
         JOIN files f ON h.file_id = f.file_id
         JOIN users u ON f.contributor_id = u.user_id
