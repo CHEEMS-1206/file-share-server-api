@@ -269,7 +269,7 @@ function determineFileType(filename) {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "../Uploaded_files");
+    cb(null, '/mnt/data/Uploaded_files');
   },
   filename: async (req, file, cb) => {
     const { originalname } = file;
