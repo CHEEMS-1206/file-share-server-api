@@ -31,7 +31,7 @@ secrets:
   - DB_PASS
 
 env:
-  UPLOAD_DIRECTORY: /mnt/data/Uploaded_files  # Choreo file persistence path
+  UPLOAD_DIRECTORY: /mnt/data/Uploaded_files
   MAX_FILE_SIZE: "10MB"
   SUPPORTED_FILE_TYPES: "pdf,doc,docx,xls,xlsx,ppt,pptx"
 
