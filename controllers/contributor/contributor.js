@@ -269,7 +269,7 @@ function determineFileType(filename) {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = "/mnt/data/Uploaded_files";
+    const uploadDir = "/mnt/data/uploaded-files";
     console.log("Attempting to save to:", uploadDir);
 
     fs.exists(uploadDir, (exists) => {
