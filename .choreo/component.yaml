@@ -1,0 +1,40 @@
+name: file-share-server-api
+version: 1.0.0
+type: service
+runtime: nodejs16
+expose: true
+description: |
+  A file-sharing backend service using Node.js, Multer, and PostgreSQL for storage.
+
+context: /api
+build:
+  source: .
+  target: /build
+
+dependencies:
+  - name: postgres
+    type: database
+    version: latest
+    configuration:
+      engine: postgres
+      version: 14
+      username: ${DB_USERNAME}
+      password: ${DB_PASS}
+      database: ${DB_NAME}
+      host: ${DB_URI}
+      port: 5432
+
+secrets:
+  - JWT_SECRET
+  - HOST_EMAIL_PASSWORD
+  - DB_PASS
+
+env:
+  UPLOAD_DIRECTORY: /mnt/data/Uploaded_files
+  MAX_FILE_SIZE: "10MB"
+  SUPPORTED_FILE_TYPES: "pdf,doc,docx,xls,xlsx,ppt,pptx"
+
+ingress:
+  path: /
+  method: POST
+  service: file-share-server-api
