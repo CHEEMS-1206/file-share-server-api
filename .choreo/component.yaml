@@ -1,10 +1,11 @@
+schemaVersion: 1.0
 name: file-share-server-api
 version: 1.0.0
 type: service
 runtime: nodejs16
 expose: true
 description: |
-  A file-sharing backend service using Node.js, Multer, and PostgreSQL for storage.
+  A file-sharing backend service using Node.js, Multer, NeonDB, and Choreo for storage.
 
 context: /api
 build:
@@ -30,7 +31,7 @@ secrets:
   - DB_PASS
 
 env:
-  UPLOAD_DIRECTORY: /mnt/data/Uploaded_files
+  UPLOAD_DIRECTORY: /mnt/data/Uploaded_files  # Choreo file persistence path
   MAX_FILE_SIZE: "10MB"
   SUPPORTED_FILE_TYPES: "pdf,doc,docx,xls,xlsx,ppt,pptx"
 
