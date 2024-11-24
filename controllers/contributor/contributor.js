@@ -269,14 +269,22 @@ function determineFileType(filename) {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, '/mnt/data/Uploaded_files');
-  },
-  filename: async (req, file, cb) => {
-    const { originalname } = file;
+    const uploadDir = "/mnt/data/Uploaded_files";
+    console.log("Attempting to save to:", uploadDir);
 
-    cb(null, originalname);
+    fs.exists(uploadDir, (exists) => {
+      if (!exists) {
+        console.log("Directory does not exist, creating it...");
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    });
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname); 
   },
 });
+
 
 const upload = multer({ storage }).single("file");
 
