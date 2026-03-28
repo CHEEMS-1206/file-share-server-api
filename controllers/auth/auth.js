@@ -332,15 +332,17 @@ export const validateToken = async (req) => {
       decodedVals: "",
     };
 
-    const token = req.headers.authorization.split(" ")[1];
-    // console.log(token);
-
-    if (!token || token === "undefined") {
-      res.isInvalid = true;
-      res.status = 401;
-      res.message = "Token is missing.";
-      return res;
+    // validating that token exists
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return {
+        isInvalid: true,
+        status: 401,
+        message: "Token missing or malformed",
+      };
     }
+
+    const token = authHeader.split(" ")[1];
 
     // Verify token
     const decoded = await verifyToken(token, process.env.JWT_SECRET);
