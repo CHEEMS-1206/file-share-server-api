@@ -3,9 +3,15 @@ import bodyParser from "body-parser";
 
 // import controllers for receiver
 import * as receiverControllers from "../controllers/receiver/receiver.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { allowRoles } from "../middlewares/roleBasedMiddleware.js";
 
 // define router
 const receiverRouter = express.Router();
+
+// Apply auth to all routes
+receiverRouter.use(authMiddleware)
+receiverRouter.use(allowRoles("Receiver"));
 
 receiverRouter.get("/profile",receiverControllers.getProfileData) // get profile data
 receiverRouter.get("/all-files", receiverControllers.allFiles) // shows all the files

@@ -3,9 +3,15 @@ import bodyParser from "body-parser";
 
 // import controllers for contributors
 import * as contributorControllers from "../controllers/contributor/contributor.js"
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { allowRoles } from "../middlewares/roleBasedMiddleware.js";
 
 // define router
 const contributorRouter = express.Router();
+
+// Apply auth to all routes
+contributorRouter.use(authMiddleware);
+contributorRouter.use(allowRoles("Contributor"));
 
 contributorRouter.get("/profile",contributorControllers.getProfileData) // get profile data
 contributorRouter.get("/my-files",contributorControllers.myFiles) // all files uploaded
