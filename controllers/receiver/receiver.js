@@ -1,23 +1,19 @@
 import pool from "../../config/config.js";
-import { validateToken } from "../auth/auth.js";
+import bcrypt from "bcrypt";
+import AWS from "aws-sdk";
+
+const s3 = new AWS.S3({
+  endpoint: process.env.S3_ENDPOINT,
+  s3ForcePathStyle: true,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+
 
 export const allFiles = async (req, res) => {
   try {
-    const vldnRslt = await validateToken(req);
-    if (vldnRslt.isInvalid) {
-      return res
-        .status(vldnRslt.status)
-        .json({ success: false, msg: vldnRslt.message });
-    }
-
-    if (vldnRslt.decodedVals.user_type !== "Receiver") {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          msg: "Restricted Route for this kind of user!",
-        });
-    }
+    const user = req.user;
 
     const client = await pool.connect();
     try {
@@ -25,7 +21,6 @@ export const allFiles = async (req, res) => {
         "SELECT file_id, file_title, uploaded_at, download_count FROM files ORDER BY uploaded_at"
       );
       const files = result.rows;
-      console.log(files);
       return res.status(200).json(files);
     } catch (error) {
       console.error("Error in fetching files:", error);
@@ -45,21 +40,7 @@ export const allFiles = async (req, res) => {
 
 export const fileById = async (req, res) => {
   try {
-    const vldnRslt = await validateToken(req);
-    if (vldnRslt.isInvalid) {
-      return res
-        .status(vldnRslt.status)
-        .json({ success: false, msg: vldnRslt.message });
-    }
-
-    if (vldnRslt.decodedVals.user_type !== "Receiver") {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          msg: "Restricted Route for this kind of user!",
-        });
-    }
+    const user = req.user;
 
     const file_id = req.params.file_id;
     const client = await pool.connect();
@@ -69,7 +50,6 @@ export const fileById = async (req, res) => {
         [file_id]
       );
       const file = result.rows[0];
-      console.log(file);
       return res.status(200).json(file);
     } catch (error) {
       console.error("Error in fetching file:", error);
@@ -89,21 +69,7 @@ export const fileById = async (req, res) => {
 
 export const allContributors = async (req, res) => {
   try {
-    const vldnRslt = await validateToken(req);
-    if (vldnRslt.isInvalid) {
-      return res
-        .status(vldnRslt.status)
-        .json({ success: false, msg: vldnRslt.message });
-    }
-
-    if (vldnRslt.decodedVals.user_type !== "Receiver") {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          msg: "Restricted Route for this kind of user!",
-        });
-    }
+    const user = req.user;
 
     const client = await pool.connect();
     try {
@@ -111,7 +77,6 @@ export const allContributors = async (req, res) => {
         "SELECT user_username, user_id FROM users WHERE user_type = 'Contributor'"
       );
       const contributors = result.rows;
-      console.log(contributors);
       return res.status(200).json(contributors);
     } catch (error) {
       console.error("Error in fetching contributors:", error);
@@ -131,21 +96,7 @@ export const allContributors = async (req, res) => {
 
 export const contributorByUserId = async (req, res) => {
   try {
-    const vldnRslt = await validateToken(req);
-    if (vldnRslt.isInvalid) {
-      return res
-        .status(vldnRslt.status)
-        .json({ success: false, msg: vldnRslt.message });
-    }
-
-    if (vldnRslt.decodedVals.user_type !== "Receiver") {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          msg: "Restricted Route for this kind of user!",
-        });
-    }
+    const user = req.user;
 
     const client = await pool.connect();
     const userId = req.params.contributor_id;
@@ -155,7 +106,6 @@ export const contributorByUserId = async (req, res) => {
         [userId]
       );
       const contributor = result.rows[0];
-      console.log(contributor);
       return res.status(200).json(contributor);
     } catch (error) {
       console.error("Error in fetching contributor details:", error);
@@ -175,21 +125,7 @@ export const contributorByUserId = async (req, res) => {
 
 export const filesByContributorId = async (req, res) => {
   try {
-    const vldnRslt = await validateToken(req);
-    if (vldnRslt.isInvalid) {
-      return res
-        .status(vldnRslt.status)
-        .json({ success: false, msg: vldnRslt.message });
-    }
-
-    if (vldnRslt.decodedVals.user_type !== "Receiver") {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          msg: "Restricted Route for this kind of user!",
-        });
-    }
+    const user = req.user;
 
     const client = await pool.connect();
     const userId = req.params.contributor_id;
@@ -199,7 +135,6 @@ export const filesByContributorId = async (req, res) => {
         [userId]
       );
       const files = result2.rows;
-      console.log(files);
       return res.status(200).json(files);
     } catch (error) {
       console.error("Error in fetching contributor files:", error);
@@ -217,33 +152,22 @@ export const filesByContributorId = async (req, res) => {
   }
 };
 
+// for local and file system
+/*
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+*/
 
 export const downloadFile = async (req, res) => {
+  let client;
   try {
-    const vldnRslt = await validateToken(req);
-    if (vldnRslt.isInvalid) {
-      return res
-        .status(vldnRslt.status)
-        .json({ success: false, msg: vldnRslt.message });
-    }
-
-    if (vldnRslt.decodedVals.user_type !== "Receiver") {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          msg: "Restricted Route for this kind of user!",
-        });
-    }
-
-    const client = await pool.connect();
+    const user = req.user;
+    client = await pool.connect();
     const file_id = req.params.file_id;
-    const password = req.body.file_password;
+    const file_password = req.body.file_password;
     try {
       const result = await client.query(
         "SELECT file_password, file_path, file_title FROM files WHERE file_id = $1",
@@ -254,26 +178,65 @@ export const downloadFile = async (req, res) => {
         return res
           .status(401)
           .json({ success: false, msg: "No such file exists." });
-      console.log(file);
-      if (file.file_password !== password) {
+
+      const isMatch = await bcrypt.compare(file_password, file.file_password);
+
+      if (!isMatch) {
         return res
           .status(400)
           .json({ success: false, msg: "Incorrect password." });
       }
 
+      // local file storage code
+      /*
       const filePath = join(__dirname, file.file_path);
-      console.log(file.file_path);
       res.download(filePath, file.file_title); // Send the file to the user for download
-      // Update download count in the database
-      await client.query(
-        "UPDATE files SET download_count = download_count + 1 WHERE file_id = $1",
-        [file_id]
-      );
-      // Update history table
-      await client.query(
-        "INSERT INTO history (downloader_id, file_id) VALUES ($1, $2)",
-        [vldnRslt.decodedVals.user_id, file_id]
-      );
+      */
+      const filekey = file.file_path;
+      const s3Stream = s3.getObject({
+        Bucket: process.env.S3_BUCKET,
+        Key: filekey,
+      }).createReadStream();
+
+      s3Stream.on("error", (err) => {
+        console.error("S3 Stream Error:", err);
+        if (!res.headersSent) res.status(500).send("Error streaming file.");
+      });
+
+      
+      // ✅ Update download count
+      await Promise.all([
+        client.query(
+          "UPDATE files SET download_count = download_count + 1 WHERE file_id = $1",
+          [file_id]
+          ),
+          client.query(
+            "INSERT INTO history (downloader_id, file_id) VALUES ($1, $2)",
+            [user.user_id, file_id]
+            ),
+          ]);
+          
+          // Set headers for download
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${file.file_title}"`
+          );
+          s3Stream.pipe(res);
+
+          s3Stream.on("end", () => {
+            console.log("Download complete for file:", file_id);
+            // You don't need res.send() here because pipe() handles the closing of the connection
+          });
+
+          s3Stream.on("error", (err) => {
+            console.error("S3 Stream Error:", err);
+            if (!res.headersSent) {
+              res
+                .status(500)
+                .json({ success: false, msg: "Streaming failed." });
+            }
+          });
+          
     } catch (error) {
       console.error("Error in downloading file:", error);
       return res
@@ -292,17 +255,7 @@ export const downloadFile = async (req, res) => {
 
 export const downloadHistory = async (req, res) => {
   try {
-    const vldnRslt = await validateToken(req);
-    if (vldnRslt.isInvalid) {
-      return res.status(vldnRslt.status).json({ msg: vldnRslt.message });
-    }
-
-    if (vldnRslt.decodedVals.user_type !== "Receiver") {
-      return res
-        .status(400)
-        .json({ msg: "Restricted Route for this kind of user!" });
-    }
-
+    const user = req.user;
     const client = await pool.connect();
     try {
       // Fetch download history records for the receiver
@@ -320,10 +273,10 @@ export const downloadHistory = async (req, res) => {
         ORDER BY h.downloaded_at DESC;
       `;
 
-      const result = await client.query(query, [vldnRslt.decodedVals.user_id]);
+      const result = await client.query(query, [user.user_id]);
+      
       const downloadHistory = result.rows;
 
-      console.log(downloadHistory);
       return res.status(200).json(downloadHistory);
     } catch (error) {
       console.error("Error in fetching download history:", error);
@@ -339,32 +292,18 @@ export const downloadHistory = async (req, res) => {
   }
 };
 
-
 export const getProfileData = async (req, res) => {
   try {
-    const vldnRslt = await validateToken(req);
-    if (vldnRslt.isInvalid) {
-      return res
-        .status(vldnRslt.status)
-        .json({ success: false, msg: vldnRslt.message });
-    }
-
-    if (vldnRslt.decodedVals.user_type !== "Receiver") {
-      return res.status(400).json({
-        success: false,
-        msg: "Restricted Route for this kind of user!",
-      });
-    }
+    const user = req.user;
 
     const client = await pool.connect();
     try {
       const result = await client.query(
         "SELECT user_name, user_email, user_phone_no, user_username, user_profile_pic, user_type FROM users WHERE user_id = $1",
-        [vldnRslt.decodedVals.user_id]
+        [user.user_id]
       );
-      const user = result.rows[0];
-      console.log(user);
-      return res.status(200).json(user);
+      const userFromDb = result.rows[0];
+      return res.status(200).json(userFromDb);
     } catch (error) {
       console.error("Error in fetching user details:", error);
       return res
