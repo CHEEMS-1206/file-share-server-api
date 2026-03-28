@@ -9,6 +9,13 @@ dotenv.config();
 const pool = new Pool({
   connectionString: process.env.DB_URI,
 });
-console.log("Connected !")
+// confirming DB connection !
+pool
+  .connect()
+  .then(() => console.log("DB Connected ✅"))
+  .catch((err) => console.error("DB Connection Failed ❌", err));
 
+pool.on("error", (err, client) => {
+    console.error("Unexpected error on idle client", err);
+});
 export default pool
