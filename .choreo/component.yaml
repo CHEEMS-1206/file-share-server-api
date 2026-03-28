@@ -19,10 +19,10 @@ dependencies:
     configuration:
       engine: postgres
       version: 14
-      username: '%env(DB_USERNAME)%'
-      password: '%env(DB_PASS)%'
-      database: '%env(DB_NAME)%'
-      host: '%env(DB_URI)%'
+      username: ${DB_USERNAME}
+      password: ${DB_PASS}
+      database: ${DB_NAME}
+      host: ${DB_URI}
       port: 5432
 
 secrets:

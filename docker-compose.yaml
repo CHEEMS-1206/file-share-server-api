@@ -1,0 +1,75 @@
+services:
+  localstack:
+    image: localstack/localstack
+    container_name: localstack_main
+    privileged: true
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - DEBUG=1
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN}
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./setup-s3:/etc/localstack/init/ready.d"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:17
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # optional init script
+      - ../Database/creating-tables.sql:/docker-entrypoint-initdb.d/creating-tables.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  file-share-backend:
+    build: .
+    container_name: file-share-api
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      localstack:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      - S3_ENDPOINT=${S3_ENDPOINT}
+      - S3_BUCKET=${S3_BUCKET}
+      - DB_URI=postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - HOST_EMAIL_USER=${HOST_EMAIL_USER}
+      - HOST_EMAIL_PASSWORD=${HOST_EMAIL_PASSWORD}
+      - PORT=${PORT}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+
+  frontend:
+    build: ../file-share-frontend
+    container_name: file-share-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - file-share-backend
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+
+volumes:
+  postgres_data:
