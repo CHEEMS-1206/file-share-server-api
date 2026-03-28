@@ -32,7 +32,7 @@ SERVER.use("/api/contributor", contributorRouter);
 SERVER.use("/api/receiver", receiverRouter);
 
 // defining port for backend rest server
-const PORT = 5001;
+const PORT = process.env.PORT;
 
 // run the server at PORT
 SERVER.listen(PORT, () =>
