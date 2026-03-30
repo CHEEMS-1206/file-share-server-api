@@ -1,21 +1,67 @@
 # File Share Server
 
-Welcome to File Share Backend, a powerful backend solution for sharing encrypted files with different users. This project is built using Postgre SQL, Express, and Node.js, providing a robust foundation for CRUD operations and file management. Whether you are developing a personal project or an enterprise-level application, File Share Backend has you covered. This repository contains the backend codebase for a powerful file sharing application built using Node.js, Postgre SQL, and Express. The backend system serves as the robust foundation for managing files, their encryptions, user details and authentication, and associated functionalities seamlessly.
+A secure, scalable, and cloud-ready file sharing backend built with Node.js, Express, and PostgreSQL. This system enables contributors to upload encrypted files and receivers to securely access them with proper authentication, authorization, and download tracking.
 
 ## Key Specifications
+### Features 
+🔐 JWT-based Authentication & Authorization
+
+📁 Secure File Upload & Download
+
+🔑 File-level Password Protection
+
+📧 Email-based OTP Verification
+
+👥 Role-based Access (Contributor / Receiver)
+
+📊 Download Tracking & History
+
+⚡ Scalable & Modular Architecture
+
+🐳 Dockerized application for consistent and portable deployments
+
+☁️ AWS S3 simulation using LocalStack to replicate real-world cloud storage locally
+
+🌐 Cloud-ready architecture (easy migration from LocalStack → AWS S3)
+
+⚙️ Environment-driven configuration for secure deployments
+
+🚦 Designed with scalability in mind (rate limiting, modularization, microservices-ready)
+
 ### Technologies Used:
-POSTgre SQL: A SQL database used for storing file-related info.
+Backend ->	Node.js, Express
 
-Express: A web application framework for Node.js, facilitating the creation of robust APIs.
+Database	-> PostgreSQL (NeonDB / Local)
 
-Node.js: A runtime environment for executing JavaScript code server-side.
+File Storage ->	AWS S3 (LocalStack for local dev)
 
-### Purpose:
-POSTgre SQL: Used to store and retrieve file data efficiently.
+Auth ->	JWT, bcrypt
 
-Express: Provides a set of features for building web and mobile applications, including robust routing.
+Email ->	Nodemailer
 
-Node.js: Powers the server-side logic, handling requests and responses.
+DevOps	-> Docker, LocalStack
+
+Utilities ->	dotenv, multer
+
+### Architecture 
+Routes → Controllers → (Service Layer - planned) → Models → Database
+
+Routes → API endpoints
+
+Controllers → Core business logic
+
+Models → Database interaction
+
+Middleware → Auth, validation, error handling
+
+### 🔐 Authentication Flow
+User registers → OTP sent via email
+
+OTP verification → Account activated
+
+Login → JWT issued
+
+Protected routes accessed using JWT
 
 ### Endpoints
 
@@ -91,6 +137,10 @@ nodemon: A development utility that monitors for changes in source files and aut
 
 uuid: A library for generating unique identifiers (UUIDs) for objects or entities, ensuring uniqueness across distributed systems or databases.
 
+file-type: To get the mime type of the file sent by the user for storage, to enhance security and scrutinity.
+
+aws-sdk: To simulate AWS cloud nature using localstack.
+
 ### Architecture
 The project follows a Model, Routes, and Controllers architecture:
 
@@ -100,41 +150,137 @@ Routes: Handles incoming HTTP requests and routes them to the appropriate contro
 
 Controllers: Contains the logic for handling different API endpoints.
 
+Services: In future, service layers can be introduced to remove clutter and violation of DRY principle and make code mor readable and modular.
+
 ### Getting Started
 Clone the repository:
 git clone https://github.com/CHEEMS-1206/file-share-server-api.git
+
 Install dependencies:
 cd file-share-api
 npm install
+
 Set up your environment variables:
 Create a .env file in the root of your project and add the necessary environment variables. You can use the provided .env.example as a template.
+
 Run the development server:
 npm run dev
+
+### Sample .env 
+DB_PASS=
+
+DB_USERNAME=
+
+DB_URI=
+
+DB_NAME=
+
+
+PORT=
+
+JWT_SECRET=
+
+
+HOST_EMAIL_USER=
+
+HOST_EMAIL_PASSWORD=
+
+
+S3_BUCKET=
+
+S3_ENDPOINT=
+
+AWS_ACCESS_KEY_ID=
+
+AWS_SECRET_ACCESS_KEY=
+
+AWS_REGION=
+
+LOCALSTACK_AUTH_TOKEN=
+
+
+/// Extras ///
+
+
+For local database ->
+
+DB_PASS_LOCAL=
+
+DB_USERNAME_LOCAL=
+
+
+For NeonDB (cloud database) -> 
+
+DB_PASS_NEON=
+
+DB_USERNAME_NEON=
 
 ### Folder Structure
 file-share-api/
 
-|-- config/
+│── config/          # DB & app config
 
-|-- controllers/
+│── controllers/     # Business logic
 
-|-- emailAndOtp/
+│── models/          # DB schema
 
-|-- models/
+│── routes/          # API routes
 
-|-- routes/
+│── middleware/      # Auth & validation
 
-|-- validators/
+│── utils/           # Helpers (OTP, mail)
 
-|-- .env
+│── validators/      # Request validation
 
-|-- .gitignore
+│── uploads/         # File storage (local) / if using s3 from aws or localstack no need for this.
 
-|-- index.js
+│── index.js         # Entry point
 
-|-- package.json
+│── package.json
 
-|-- README.md
+│── Dockerfile
 
-### Contributing
-Feel free to contribute to the project by opening issues or submitting pull requests. Your feedback and contributions are highly appreciated!
+│── README.md
+
+### Docker Setup
+-> Build image
+docker build -t file-share-api .
+
+-> Run container
+docker run -p 4000:4000 file-share-api --env-file .env
+
+### 🔒 Security Practices
+Password hashing using bcrypt
+
+JWT-based authentication
+
+Environment-based secrets
+
+Input validation & sanitization
+
+Secure file access controls
+
+### 🚀 Future Improvements
+Service Layer abstraction
+
+Centralized error handling
+
+Logging (Winston / Morgan)
+
+Rate limiting (Redis)
+
+AWS S3 production integration
+
+CI/CD pipeline
+
+Microservices migration
+
+### 🤝 Contributing
+-> git checkout -b feature/your-feature
+
+-> git commit -m "Add feature"
+
+-> git push origin feature/your-feature
+
+### Created by 
+Priyanshu Singh 
